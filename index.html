@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Midnight Kitchen — an all-night steam counter. A web game where you catch steam from dishes with hand tracking.">
+  <meta property="og:title" content="The Midnight Kitchen">
+  <meta property="og:description" content="The all-night steam counter. Catch steam with your hands in this original AR cooking game.">
+  <meta property="og:type" content="website">
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="The Midnight Kitchen">
+  <meta property="twitter:description" content="The all-night steam counter. Catch steam with your hands.">
+  <title>The Midnight Kitchen — the all-night steam counter</title>
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs" as="script" type="module">
+  <link rel="preload" href="/models/hand_landmarker.task" as="fetch" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Nunito:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%23D49A3F' stroke-width='2'/%3E%3Cpath d='M32 20 Q35 15 38 20 Q35 25 32 28 Q29 25 26 20 Q29 15 32 20' fill='%23E8A54B' opacity='0.8'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="web/style.css">
+  <noscript>
+    <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
+      <h1>The Midnight Kitchen requires JavaScript.</h1>
+      <p>Please enable JavaScript to play this game.</p>
+    </div>
+  </noscript>
+</head>
+<body>
+  <div class="app-container">
+    <div class="bar">
+      <div class="bar-left">
+        <div class="brand">
+          <svg class="brand-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M20 10 Q22 6 24 10 Q22 14 20 16 Q18 14 16 10 Q18 6 20 10" fill="currentColor" opacity="0.7"/>
+          </svg>
+          <span class="brand-text">The Midnight Kitchen</span>
+        </div>
+        <div class="tagline">open till the last craving</div>
+      </div>
+      <div class="bar-right">
+        <div class="pass-panel">
+          <div class="pass-label" id="passLabel">Pass 1 of 3</div>
+          <div class="hint-line" id="hintLine">Hover your palm over the dish to catch steam</div>
+          <div class="steam-gauge">
+            <div class="steam-gauge-bar" id="steamGauge" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-container">
+      <canvas id="stage"></canvas>
+    </div>
+
+    <div class="dock">
+      <button class="dock-pill" id="dockPill" aria-haspopup="dialog">Dish: Kulhad Chai</button>
+    </div>
+
+    <div class="foot">
+      <div class="foot-left chip"><code>open · serves: <span id="servesCount">0</span> · dish: <span id="dishName">chai</span></code></div>
+      <div class="foot-center">A steam game for grown-ups and kids alike. No smoke, no food, no calories.</div>
+      <div class="foot-right">made with heart by nycanshu</div>
+    </div>
+  </div>
+
+  <!-- OPEN SCREEN -->
+  <dialog id="openDialog" class="dialog-overlay">
+    <div class="dialog-content open-invitation">
+      <h2>The kitchen opens at nine.</h2>
+      <p>Everyone eats.</p>
+      <button id="openButton" class="btn btn-primary">Open the kitchen</button>
+      <p class="fine-print">Your camera stays on your device. Nothing is recorded or sent anywhere.</p>
+    </div>
+  </dialog>
+
+  <!-- MENU DIALOG -->
+  <dialog id="menuDialog" class="dialog-overlay">
+    <div class="dialog-content menu-card">
+      <h2>Tonight's Menu</h2>
+      
+      <div class="menu-section">
+        <h3>Dishes</h3>
+        <div class="menu-plates">
+          <button class="menu-plate" data-type="dish" data-id="01" title="Kulhad Chai">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="30" cy="30" r="20" fill="#D49A3F" opacity="0.8"/>
+              <path d="M30 15 Q35 20 30 35 Q25 20 30 15" fill="#E8A54B" opacity="0.6"/>
+            </svg>
+            <span>dish/01</span>
+            <span class="dish-name">Kulhad Chai</span>
+          </button>
+          <button class="menu-plate" data-type="dish" data-id="02" title="Chicken Biryani">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <rect x="15" y="15" width="30" height="30" fill="#B96A3B" rx="2"/>
+              <circle cx="30" cy="30" r="8" fill="#A85A2B"/>
+            </svg>
+            <span>dish/02</span>
+            <span class="dish-name">Chicken Biryani</span>
+          </button>
+          <button class="menu-plate" data-type="dish" data-id="03" title="Dinner Platter">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="30" cy="30" r="22" fill="#7B6B4F"/>
+              <circle cx="30" cy="30" r="18" fill="#8F7B5C" opacity="0.7"/>
+            </svg>
+            <span>dish/03</span>
+            <span class="dish-name">Dinner Platter</span>
+          </button>
+          <button class="menu-plate" data-type="dish" data-id="04" title="Double Burger">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="30" cy="25" rx="16" ry="8" fill="#6E4A2F"/>
+              <rect x="16" y="25" width="28" height="12" fill="#7F5A3F"/>
+              <ellipse cx="30" cy="37" rx="16" ry="8" fill="#6E4A2F"/>
+            </svg>
+            <span>dish/04</span>
+            <span class="dish-name">Double Burger</span>
+          </button>
+          <button class="menu-plate" data-type="dish" data-id="05" title="Club Sandwich">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <rect x="15" y="18" width="30" height="6" fill="#7F9155"/>
+              <rect x="15" y="27" width="30" height="6" fill="#6F8145"/>
+              <rect x="15" y="36" width="30" height="6" fill="#7F9155"/>
+            </svg>
+            <span>dish/05</span>
+            <span class="dish-name">Club Sandwich</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <h3>Condiments</h3>
+        <div class="menu-chips">
+          <button class="menu-chip" data-type="chip" data-id="mint" title="mint chutney">
+            <span class="chip-tag">chip/mint</span>
+            <span class="chip-desc">mint chutney</span>
+          </button>
+          <button class="menu-chip" data-type="chip" data-id="gex" title="hot oil">
+            <span class="chip-tag">chip/gex</span>
+            <span class="chip-desc">hot oil</span>
+          </button>
+          <button class="menu-chip" data-type="chip" data-id="cola" title="cola drizzle">
+            <span class="chip-tag">chip/cola</span>
+            <span class="chip-desc">cola drizzle</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <h3>Midnight Specials</h3>
+        <div class="menu-specials" id="specialsRow">
+          <div class="specials-locked" id="specialsLocked">
+            <span class="requires-tag">requires 5 serves</span>
+          </div>
+          <div class="menu-special hidden" id="specialsList">
+            <button class="menu-special-item" data-type="special" data-id="chai-refill" title="chai refill">
+              <span class="special-tag">special/chai-refill</span>
+              <span class="special-desc">chai refill</span>
+            </button>
+            <button class="menu-special-item" data-type="special" data-id="butter-chicken" title="butter chicken">
+              <span class="special-tag">special/butter-chicken</span>
+              <span class="special-desc">butter chicken</span>
+            </button>
+            <button class="menu-special-item" data-type="special" data-id="loaded-fries" title="loaded fries">
+              <span class="special-tag">special/loaded-fries</span>
+              <span class="special-desc">loaded fries</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-status" id="menuStatus">Tonight: Kulhad Chai</div>
+
+      <div class="menu-buttons">
+        <button class="btn btn-secondary" id="cancelMenuButton">Cancel</button>
+        <button class="btn btn-primary" id="applyMenuButton">Back to the flame</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- TAB/RECEIPT DIALOG -->
+  <dialog id="tabDialog" class="dialog-overlay">
+    <div class="dialog-content tab-receipt">
+      <div class="receipt-header"><code>MIDNIGHT KITCHEN — tonight's tab</code></div>
+      <div class="receipt-items" id="receiptItems"></div>
+      <div class="receipt-line"><code>serves: <span id="finalServes">0</span></code></div>
+      <div class="receipt-total" id="receiptTotal"><code>total ₹200</code></div>
+      <div class="receipt-closing">Generously rounded down. Always.</div>
+      <button class="btn btn-primary" id="payCloseButton">Pay & close</button>
+    </div>
+  </dialog>
+
+  <!-- TOAST MESSAGES -->
+  <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
+
+  <video id="cam" autoplay muted playsinline style="display: none;"></video>
+
+  <script type="module" src="web/app.js"></script>
+</body>
+</html>
