@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Nunito:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%23D49A3F' stroke-width='2'/%3E%3Cpath d='M32 20 Q35 15 38 20 Q35 25 32 28 Q29 25 26 20 Q29 15 32 20' fill='%23E8A54B' opacity='0.8'/%3E%3C/svg%3E" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%23D49A3F' stroke-width='2'/%3E%3Cpath d='M32 18 Q34 12 36 18 Q34 24 32 28 Q30 24 28 18 Q30 12 32 18' fill='%23D49A3F' opacity='0.8'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="web/style.css">
   <noscript>
     <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
@@ -55,6 +55,7 @@
 
     <div class="dock">
       <button class="dock-pill" id="dockPill" aria-haspopup="dialog">Dish: Kulhad Chai</button>
+      <button class="dock-close" id="closeKitchenButton" title="Close the kitchen (C)" aria-label="Close the kitchen">Close the kitchen</button>
     </div>
 
     <div class="foot">
@@ -171,6 +172,7 @@
       <div class="menu-status" id="menuStatus">Tonight: Kulhad Chai</div>
 
       <div class="menu-buttons">
+        <button class="btn btn-secondary" id="shareMenuButton" data-action="share">Share tonight's tab</button>
         <button class="btn btn-secondary" id="cancelMenuButton">Cancel</button>
         <button class="btn btn-primary" id="applyMenuButton">Back to the flame</button>
       </div>
@@ -183,6 +185,7 @@
       <div class="receipt-header"><code>MIDNIGHT KITCHEN — tonight's tab</code></div>
       <div class="receipt-items" id="receiptItems"></div>
       <div class="receipt-line"><code>serves: <span id="finalServes">0</span></code></div>
+      <div class="receipt-line-dashed">. . . . . . . . . . . . . . . . . . . . . . . .</div>
       <div class="receipt-total" id="receiptTotal"><code>total ₹200</code></div>
       <div class="receipt-closing">Generously rounded down. Always.</div>
       <button class="btn btn-primary" id="payCloseButton">Pay & close</button>
