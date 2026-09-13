@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "public": false,
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "SERVE_STATIC_GZIP": "true"
+  }
+}
