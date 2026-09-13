@@ -1,134 +1,53 @@
-# The Midnight Kitchen — Build Complete
+# Fresh Squeeze — Setup & Architecture Guide
 
-All files have been successfully created and pushed to GitHub.
+## Overview
 
-## Repository
-https://github.com/tosif121/midnight-kitchen
+Fresh Squeeze is an AR web application built with vanilla JavaScript and MediaPipe Vision Tasks. It renders an interactive 2D canvas with a transparent highball glass of chilled orange juice and a striped drinking straw.
 
-## Setup & Run
+## Getting Started
 
-### 1. Download MediaPipe Model
+### 1. Prerequisites
+- Modern browser supporting WebGL and WebRTC.
+- Both MediaPipe models are stored locally in `models/`:
+  - `models/hand_landmarker.task`
+  - `models/face_landmarker.task`
+
+### 2. Launch Local Server
 ```bash
-mkdir -p models
-curl -o models/hand_landmarker.task \
-  https://storage.googleapis.com/mediapipe-assets/hand_landmarker.task
-```
-
-### 2. Start Local Server
-```bash
+# Start local server on port 8080
 python3 -m http.server 8080
 ```
 
-### 3. Open Browser
-```
-http://localhost:8080
-```
+### 3. Open in Browser
+Open `http://localhost:8080` in Chrome, Safari, Edge, or Firefox.
 
-## Project Structure
+## Project Architecture
+
 ```
 midnight-kitchen/
-├── index.html              # Main HTML with dialogs & canvas
+├── index.html              # Main HTML markup, HUD and dialogs
 ├── web/
-│   ├── style.css          # Chalkboard theme styling
-│   └── app.js             # Complete game logic (962 lines)
+│   └── style.css          # Citrus sunrise theme & glassmorphic styles
+├── dist/
+│   └── app.min.js         # Core game logic, vision tracking & 2D canvas rendering
 ├── models/
-│   └── hand_landmarker.task  # Download separately (~23 MB)
-├── vercel.json            # Deployment config
-├── .gitignore
-├── README.md              # Full documentation
-└── SETUP.md               # This file
+│   ├── hand_landmarker.task  # MediaPipe hand landmarker
+│   └── face_landmarker.task  # MediaPipe face landmarker
+├── sw.js                   # Service worker for offline asset caching
+├── vercel.json             # Deployment configuration
+├── README.md               # Overview documentation
+└── SETUP.md                # Architecture & setup guide
 ```
 
-## Features Implemented
+## Core Systems in `dist/app.min.js`
 
-### Core Gameplay
-- ✅ Hand tracking via MediaPipe
-- ✅ 4-state machine (IDLE → HOVERING → CAPTURING → RELEASING)
-- ✅ Meter fill system (30% threshold for valid serve)
-- ✅ Steam particle physics with per-dish tuning
-- ✅ 5 serves to unlock Midnight Specials
-
-### Menu System
-- ✅ 5 dishes (Chai, Biryani, Platter, Burger, Sandwich)
-- ✅ 3 chips (mint, hot oil, cola)
-- ✅ 3 specials (chai refill, butter chicken, loaded fries)
-- ✅ Dish/chip/special selection with visual feedback
-
-### UI & UX
-- ✅ Chalkboard night market aesthetic
-- ✅ Open invitation dialog
-- ✅ Menu card with selections
-- ✅ Receipt/tab tracking
-- ✅ Toast notifications
-- ✅ Steam gauge & hint line
-
-### Accessibility
-- ✅ Keyboard navigation (Tab, Enter, Esc)
-- ✅ Focus indicators
-- ✅ ARIA labels
-- ✅ prefers-reduced-motion support
-- ✅ Responsive design (mobile, tablet, desktop)
-- ✅ Safe-area insets for notched devices
-
-### Sharing
-- ✅ URL params: ?dish=chai&chip=mint&special=chai-refill
-- ✅ Share button (Web Share API + clipboard fallback)
-- ✅ URL round-trip parsing
-
-## Testing Checklist
-
-### Gameplay Flow
-- [ ] Open page → see open invitation
-- [ ] Click "Open the kitchen" → camera permission dialog
-- [ ] Canvas renders with chalkboard, dish, flame
-- [ ] Hold open palm over pot → meter fills
-- [ ] Move hand up → steam particles burst
-- [ ] Serve counted if meter > 30%
-- [ ] After 5 serves → specials unlock (dock glows)
-- [ ] Click menu → select different dish
-- [ ] Click menu → select chip
-- [ ] Close/reset → see receipt
-- [ ] Check serves count in footer
-
-### Responsive
-- [ ] Desktop: all UI visible
-- [ ] Tablet (< 768px): bar wraps
-- [ ] Mobile (< 480px): dock at top, font sizes smaller
-
-### Accessibility
-- [ ] Tab through buttons
-- [ ] Esc closes dialogs
-- [ ] Focus outlines visible (brass color)
-- [ ] Toast messages appear
-- [ ] prefers-reduced-motion: no wobble (dev tools → rendering)
-
-### Sharing
-- [ ] Copy share URL
-- [ ] Paste in new tab
-- [ ] Loads with selected dish/chip/special
-- [ ] Toast shows: "Tonight: [Dish] · [Chip] · [Special]"
-
-## Known Limitations
-
-1. **MediaPipe Model**: hand_landmarker.task (~23 MB) must be downloaded separately
-2. **Camera**: HTTPS required on production (HTTP works locally)
-3. **Serve Pose**: Simplified (single hand only; full dual-hand detection available)
-4. **Browser**: IE 11 not supported (ES modules required)
-
-## Deployment (Vercel)
-
-1. Repo already pushed to GitHub
-2. Import to Vercel dashboard
-3. Add model file to `public/models/hand_landmarker.task` OR update modelAssetPath to CDN
-4. Deploy (no build command needed)
-
-## File Sizes
-
-- index.html: ~15 KB
-- web/style.css: ~50 KB
-- web/app.js: ~45 KB
-- hand_landmarker.task: ~23 MB (separate download)
-
----
-
-**Status**: ✅ READY FOR LOCAL TESTING
+1. **`GlassDrinkRenderer`**:
+   - Renders the transparent highball glass, crystal base, liquid gradient, surface meniscus, floating ice cubes, orange slice garnish, and condensation beads.
+2. **`StrawController`**:
+   - Manages inverse kinematics, flexible bend, dynamic juice suction column, and hand/mouth magnetic snapping.
+3. **`VisionDetector`**:
+   - Interfaces with MediaPipe `HandLandmarker` and `FaceLandmarker`. Calculates pinch/grip score and blendshapes (`mouthPucker`, `mouthFunnel`).
+4. **`SoundFx`**:
+   - Web Audio API procedural sound synthesizer (bubbly straw suction, crystal clink, and celebration chime).
+5. **`ParticleSystem`**:
+   - Citrus splash droplets and sparkling vitamin C stars.

@@ -1,202 +1,95 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The Midnight Kitchen — an all-night steam counter. A web game where you catch steam from dishes with hand tracking.">
-  <meta property="og:title" content="The Midnight Kitchen">
-  <meta property="og:description" content="The all-night steam counter. Catch steam with your hands in this original AR cooking game.">
-  <meta property="og:type" content="website">
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:title" content="The Midnight Kitchen">
-  <meta property="twitter:description" content="The all-night steam counter. Catch steam with your hands.">
-  <title>The Midnight Kitchen — the all-night steam counter</title>
-  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs" as="script" type="module">
-  <link rel="preload" href="/models/hand_landmarker.task" as="fetch" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Nunito:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='%23D49A3F' stroke-width='2'/%3E%3Cpath d='M32 18 Q34 12 36 18 Q34 24 32 28 Q30 24 28 18 Q30 12 32 18' fill='%23D49A3F' opacity='0.8'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="web/style.css">
-  <noscript>
-    <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
-      <h1>The Midnight Kitchen requires JavaScript.</h1>
-      <p>Please enable JavaScript to play this game.</p>
-    </div>
-  </noscript>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fresh Squeeze — sip cold orange juice with your hands</title>
+<meta name="description" content="Fresh Squeeze, the interactive online juice bar. A camera game where you grab the straw and sip chilled orange juice from a transparent glass with your hands. Runs in your browser; nothing leaves your device.">
+<meta name="theme-color" content="#FF7A00">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Fresh Squeeze — Cold Orange Juice">
+<meta property="og:description" content="Grab the straw, bring it to your lips, and sip cold fresh orange juice. Runs entirely in your browser; nothing leaves your device.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Fresh Squeeze">
+<meta name="twitter:description" content="Grab the straw, bring it to your lips, and sip cold fresh orange juice. Runs entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23FF7A00'/><circle cx='50' cy='50' r='40' fill='%23FFFDF7'/><circle cx='50' cy='50' r='36' fill='%23FFA726'/><path d='M50 14 L50 86 M14 50 L86 50 M24 24 L76 76 M24 76 L76 24' stroke='%23FFFDF7' stroke-width='4'/><circle cx='50' cy='50' r='10' fill='%23FFFDF7'/></svg>">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs">
+<link rel="preload" href="models/hand_landmarker.task" as="fetch" crossorigin="anonymous">
+<link rel="preload" href="models/face_landmarker.task" as="fetch" crossorigin="anonymous">
+<link rel="modulepreload" href="dist/app.min.js">
+<link rel="stylesheet" href="web/style.css">
 </head>
 <body>
-  <div class="app-container">
-    <div class="bar">
-      <div class="bar-left">
-        <div class="brand">
-          <svg class="brand-mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M20 10 Q22 6 24 10 Q22 14 20 16 Q18 14 16 10 Q18 6 20 10" fill="currentColor" opacity="0.7"/>
-          </svg>
-          <span class="brand-text">The Midnight Kitchen</span>
-        </div>
-        <div class="tagline">open till the last craving</div>
+<canvas id="stage" aria-label="Fresh Orange Juice interactive camera scene"></canvas>
+<video id="cam" playsinline muted autoplay></video>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="brand" href="./" aria-label="Fresh Squeeze home">
+    <svg class="mark" width="44" height="44" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="46" fill="#FF7A00"/>
+      <circle cx="50" cy="50" r="39" fill="#FFF8EE"/>
+      <circle cx="50" cy="50" r="35" fill="#FFA726"/>
+      <path d="M50 15 L50 85 M15 50 L85 50 M25 25 L75 75 M25 75 L75 25" stroke="#FFF8EE" stroke-width="4"/>
+      <circle cx="50" cy="50" r="10" fill="#FFF8EE"/>
+      <!-- Straw sticking out -->
+      <path d="M50 50 L78 12" stroke="#FF5252" stroke-width="6" stroke-linecap="round"/>
+      <path d="M78 12 L86 18" stroke="#FF5252" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    <span class="wordmark">
+      <span class="name">Fresh <em>Squeeze</em></span>
+      <span class="tagline">Chilled Pure Citrus</span>
+    </span>
+  </a>
+
+  <aside id="coach" class="coach" aria-live="polite">
+    <div class="coach-rule"></div>
+    <div class="coach-head">
+      <span id="coach-step" class="step">Step 1 of 3</span>
+      <span id="coach-state" class="state" hidden></span>
+    </div>
+    <p id="coach-hint" class="hint">Reach out and grab the straw to take a sip</p>
+    <div class="gauge">
+      <div class="meter" role="progressbar" aria-label="How much juice you have sipped" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="coach-meter">
+        <span id="coach-fill"></span>
       </div>
-      <div class="bar-right">
-        <div class="pass-panel">
-          <div class="pass-label" id="passLabel">Pass 1 of 3</div>
-          <div class="hint-line" id="hintLine">Hover your palm over the dish to catch steam</div>
-          <div class="steam-gauge">
-            <div class="steam-gauge-bar" id="steamGauge" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-          </div>
-        </div>
-      </div>
     </div>
+    <p id="coach-debug" class="debug" hidden></p>
+  </aside>
+</header>
 
-    <div class="stage-container">
-      <canvas id="stage"></canvas>
-    </div>
+<div class="scrim" aria-hidden="true"></div>
 
-    <div class="dock">
-      <button class="dock-pill" id="dockPill" aria-haspopup="dialog">Dish: Kulhad Chai</button>
-      <button class="dock-close" id="closeKitchenButton" title="Close the kitchen (C)" aria-label="Close the kitchen">Close the kitchen</button>
-    </div>
+<section id="intro" class="sheet" role="dialog" aria-labelledby="intro-title">
+  <p class="eyebrow"><span class="tick"></span>Fresh Squeeze Juice Bar</p>
+  <h1 id="intro-title">Sip fresh orange juice<br>with your <em>hands.</em></h1>
 
-    <div class="foot">
-      <div class="foot-left chip"><code>open · serves: <span id="servesCount">0</span> · dish: <span id="dishName">chai</span></code></div>
-      <div class="foot-center">A steam game for grown-ups and kids alike. No smoke, no food, no calories.</div>
-      <div class="foot-right">made with heart by nycanshu</div>
-    </div>
+  <div id="ready" class="ready">
+  <ol class="steps">
+    <li><span class="num">01</span><span>Reach out and close your hand to grab the <b>straw</b>.</span></li>
+    <li><span class="num">02</span><span>Bring the straw up to your <b>lips</b>.</span></li>
+    <li><span class="num">03</span><span><b>Pucker your lips</b> to sip the ice-cold juice!</span></li>
+  </ol>
+  <button id="start" class="btn btn-cta" type="button">Turn on my camera</button>
+  <p class="fine" id="intro-note">Your camera stays entirely on your device. Nothing is recorded or sent anywhere.</p>
   </div>
+</section>
 
-  <!-- OPEN SCREEN -->
-  <dialog id="openDialog" class="dialog-overlay">
-    <div class="dialog-content open-invitation">
-      <h2>The kitchen opens at nine.</h2>
-      <p>Everyone eats.</p>
-      <button id="openButton" class="btn btn-primary">Open the kitchen</button>
-      <p class="fine-print">Your camera stays on your device. Nothing is recorded or sent anywhere.</p>
-    </div>
-  </dialog>
+<footer class="foot">
+  <span id="vibed" class="foot-chip" hidden aria-live="polite"></span>
+  <p class="legal">Pure citrus refreshment &middot; 100% interactive in-browser AR.</p>
+  <button id="reset" class="foot-btn" type="button" title="Refill Glass (R)">refill (R)</button>
+  <a class="foot-credit" href="https://www.linkedin.com/in/tosif-devra-247471205/" target="_blank" rel="noopener noreferrer" title="Connect with Tosif Devra on LinkedIn">
+    <span>served ice cold with <span class="heart" aria-label="love">&#9829;</span></span>
+  </a>
+</footer>
 
-  <!-- MENU DIALOG -->
-  <dialog id="menuDialog" class="dialog-overlay">
-    <div class="dialog-content menu-card">
-      <h2>Tonight's Menu</h2>
-      
-      <div class="menu-section">
-        <h3>Dishes</h3>
-        <div class="menu-plates">
-          <button class="menu-plate" data-type="dish" data-id="01" title="Kulhad Chai">
-            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="30" cy="30" r="20" fill="#D49A3F" opacity="0.8"/>
-              <path d="M30 15 Q35 20 30 35 Q25 20 30 15" fill="#E8A54B" opacity="0.6"/>
-            </svg>
-            <span>dish/01</span>
-            <span class="dish-name">Kulhad Chai</span>
-          </button>
-          <button class="menu-plate" data-type="dish" data-id="02" title="Chicken Biryani">
-            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-              <rect x="15" y="15" width="30" height="30" fill="#B96A3B" rx="2"/>
-              <circle cx="30" cy="30" r="8" fill="#A85A2B"/>
-            </svg>
-            <span>dish/02</span>
-            <span class="dish-name">Chicken Biryani</span>
-          </button>
-          <button class="menu-plate" data-type="dish" data-id="03" title="Dinner Platter">
-            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="30" cy="30" r="22" fill="#7B6B4F"/>
-              <circle cx="30" cy="30" r="18" fill="#8F7B5C" opacity="0.7"/>
-            </svg>
-            <span>dish/03</span>
-            <span class="dish-name">Dinner Platter</span>
-          </button>
-          <button class="menu-plate" data-type="dish" data-id="04" title="Double Burger">
-            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-              <ellipse cx="30" cy="25" rx="16" ry="8" fill="#6E4A2F"/>
-              <rect x="16" y="25" width="28" height="12" fill="#7F5A3F"/>
-              <ellipse cx="30" cy="37" rx="16" ry="8" fill="#6E4A2F"/>
-            </svg>
-            <span>dish/04</span>
-            <span class="dish-name">Double Burger</span>
-          </button>
-          <button class="menu-plate" data-type="dish" data-id="05" title="Club Sandwich">
-            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-              <rect x="15" y="18" width="30" height="6" fill="#7F9155"/>
-              <rect x="15" y="27" width="30" height="6" fill="#6F8145"/>
-              <rect x="15" y="36" width="30" height="6" fill="#7F9155"/>
-            </svg>
-            <span>dish/05</span>
-            <span class="dish-name">Club Sandwich</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="menu-section">
-        <h3>Condiments</h3>
-        <div class="menu-chips">
-          <button class="menu-chip" data-type="chip" data-id="mint" title="mint chutney">
-            <span class="chip-tag">chip/mint</span>
-            <span class="chip-desc">mint chutney</span>
-          </button>
-          <button class="menu-chip" data-type="chip" data-id="gex" title="hot oil">
-            <span class="chip-tag">chip/gex</span>
-            <span class="chip-desc">hot oil</span>
-          </button>
-          <button class="menu-chip" data-type="chip" data-id="cola" title="cola drizzle">
-            <span class="chip-tag">chip/cola</span>
-            <span class="chip-desc">cola drizzle</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="menu-section">
-        <h3>Midnight Specials</h3>
-        <div class="menu-specials" id="specialsRow">
-          <div class="specials-locked" id="specialsLocked">
-            <span class="requires-tag">requires 5 serves</span>
-          </div>
-          <div class="menu-special hidden" id="specialsList">
-            <button class="menu-special-item" data-type="special" data-id="chai-refill" title="chai refill">
-              <span class="special-tag">special/chai-refill</span>
-              <span class="special-desc">chai refill</span>
-            </button>
-            <button class="menu-special-item" data-type="special" data-id="butter-chicken" title="butter chicken">
-              <span class="special-tag">special/butter-chicken</span>
-              <span class="special-desc">butter chicken</span>
-            </button>
-            <button class="menu-special-item" data-type="special" data-id="loaded-fries" title="loaded fries">
-              <span class="special-tag">special/loaded-fries</span>
-              <span class="special-desc">loaded fries</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-status" id="menuStatus">Tonight: Kulhad Chai</div>
-
-      <div class="menu-buttons">
-        <button class="btn btn-secondary" id="shareMenuButton" data-action="share">Share tonight's tab</button>
-        <button class="btn btn-secondary" id="cancelMenuButton">Cancel</button>
-        <button class="btn btn-primary" id="applyMenuButton">Back to the flame</button>
-      </div>
-    </div>
-  </dialog>
-
-  <!-- TAB/RECEIPT DIALOG -->
-  <dialog id="tabDialog" class="dialog-overlay">
-    <div class="dialog-content tab-receipt">
-      <div class="receipt-header"><code>MIDNIGHT KITCHEN — tonight's tab</code></div>
-      <div class="receipt-items" id="receiptItems"></div>
-      <div class="receipt-line"><code>serves: <span id="finalServes">0</span></code></div>
-      <div class="receipt-line-dashed">. . . . . . . . . . . . . . . . . . . . . . . .</div>
-      <div class="receipt-total" id="receiptTotal"><code>total ₹200</code></div>
-      <div class="receipt-closing">Generously rounded down. Always.</div>
-      <button class="btn btn-primary" id="payCloseButton">Pay & close</button>
-    </div>
-  </dialog>
-
-  <!-- TOAST MESSAGES -->
-  <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
-
-  <video id="cam" autoplay muted playsinline style="display: none;"></video>
-
-  <script type="module" src="web/app.js"></script>
+<noscript><p class="noscript">This page needs JavaScript and a camera.</p></noscript>
+<script type="module" src="dist/app.min.js"></script>
 </body>
 </html>
